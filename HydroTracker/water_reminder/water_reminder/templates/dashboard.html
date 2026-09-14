@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - HydroTracker{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h2>Welcome back, {{ user.username }}! 💧</h2>
+        <div class="goal-setter">
+            <label>Daily Goal:</label>
+            <input type="number" id="daily-goal" value="{{ user.daily_goal }}" min="500" max="5000">
+            <button onclick="updateGoal()" class="btn btn-primary">Update</button>
+        </div>
+    </div>
+
+    <div class="progress-section">
+        <div class="progress-card glass-card">
+            <h3>Today's Progress</h3>
+            <div class="progress-circle">
+                <div class="circle" style="background: conic-gradient(#667eea {{ progress_percentage * 3.6 }}deg, #e9ecef 0deg);">
+                    <div class="progress-text">
+                        <span class="amount">{{ total_today }} ml</span>
+                        <span class="goal-text">of {{ user.daily_goal }} ml</span>
+                    </div>
+                </div>
+            </div>
+            {% if weather_recommendation %}
+            <div class="weather-recommendation" style="text-align: center; margin-top: 1rem; color: white;">
+                🌡️ Today's recommended intake: {{ weather_recommendation }}ml
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="quick-add glass-card">
+            <h3>Quick Add</h3>
+            <div class="water-buttons">
+                <button onclick="addWater(250)">250ml</button>
+                <button onclick="addWater(500)">500ml</button>
+                <button onclick="addWater(1000)">1000ml</button>
+                <div class="custom-add">
+                    <input type="number" id="custom-amount" placeholder="Custom amount" min="50" max="2000">
+                    <button onclick="addCustomWater()">Add</button>
+                </div>
+            </div>
+
+            <div class="recent-history" style="margin-top: 1.5rem;">
+                <h4>Today's Log</h4>
+                {% if recent_intake %}
+                <div class="intake-list">
+                    {% for intake in recent_intake %}
+                    <div class="intake-item" style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <span>{{ intake.amount }}ml</span>
+                        <span style="color: rgba(255,255,255,0.7);">{{ intake.timestamp[11:16] }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p style="color: rgba(255,255,255,0.7); text-align: center;">No water logged today</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="progress-section">
+        <div class="weekly-progress glass-card">
+            <h3>This Week</h3>
+            <div class="week-bars">
+                {% for day in weekly_data %}
+                <div class="week-bar">
+                    <div class="bar">
+                        <div class="bar-fill" style="height: {{ (day.total / user.daily_goal) * 100 }}%"></div>
+                    </div>
+                    <div class="bar-label">{{ day.day }}</div>
+                    <div class="bar-amount">{{ day.total }}ml</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="achievements-card glass-card">
+            <h3>Recent Achievements</h3>
+            {% if achievements %}
+            <div class="achievements-grid">
+                {% for achievement in achievements %}
+                <div class="achievement unlocked">
+                    <div class="achievement-icon">{{ achievement.icon }}</div>
+                    <div class="achievement-name">{{ achievement.name }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="text-align: center; color: rgba(255,255,255,0.7);">No achievements yet. Keep drinking water!</p>
+            {% endif %}
+            <div style="text-align: center; margin-top: 1rem;">
+                <a href="{{ url_for('achievements') }}" class="btn btn-secondary">View All Achievements</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="reminder-section glass-card">
+        <h3>Smart Reminders</h3>
+        <div class="reminder-controls">
+            <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                <input type="checkbox" id="reminder-toggle">
+                Enable Smart Reminders
+            </label>
+            <div class="reminder-interval" style="display: flex; align-items: center; gap: 0.5rem;">
+                <label>Remind every:</label>
+                <select id="reminder-interval">
+                    <option value="60">1 hour</option>
+                    <option value="90">1.5 hours</option>
+                    <option value="120">2 hours</option>
+                    <option value="180">3 hours</option>
+                </select>
+            </div>
+        </div>
+        <p style="margin-top: 1rem; font-size: 0.9rem; color: rgba(255,255,255,0.7);">
+            Smart reminders adjust based on your activity patterns and optimal hydration times.
+        </p>
+    </div>
+</div>
+
+<style>
+.progress-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.progress-card h3, .quick-add h3, .weekly-progress h3, .achievements-card h3, .reminder-section h3 {
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.progress-circle {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.circle {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: conic-gradient(#667eea 0deg, #e9ecef 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.5s ease;
+}
+
+.circle::before {
+    content: '';
+    width: 160px;
+    height: 160px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+}
+
+body[data-theme="dark"] .circle::before {
+    background: #2c3e50;
+}
+
+.progress-text {
+    position: absolute;
+    text-align: center;
+    z-index: 1;
+}
+
+.amount {
+    font-size: 2rem;
+    font-weight: bold;
+    display: block;
+    color: #333;
+}
+
+body[data-theme="dark"] .amount {
+    color: #ecf0f1;
+}
+
+.goal-text {
+    font-size: 1rem;
+    color: #666;
+}
+
+body[data-theme="dark"] .goal-text {
+    color: #bbb;
+}
+
+.water-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.water-buttons button {
+    padding: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.water-buttons button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.custom-add {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.custom-add input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: white;
+}
+
+body[data-theme="dark"] .custom-add input {
+    background: #34495e;
+    border-color: #4a6278;
+    color: #ecf0f1;
+}
+
+.week-bars {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.week-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bar {
+    width: 100%;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.bar-fill {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    transition: height 0.5s ease;
+}
+
+.bar-label {
+    font-size: 0.8rem;
+    color: white;
+    font-weight: 500;
+}
+
+.bar-amount {
+    font-size: 0.8rem;
+    color: white;
+    font-weight: 500;
+}
+
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.achievement {
+    text-align: center;
+    padding: 1rem 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.achievement.unlocked {
+    background: rgba(102, 126, 234, 0.3);
+    transform: scale(1.05);
+}
+
+.achievement-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.achievement-name {
+    font-size: 0.7rem;
+    color: white;
+    font-weight: 500;
+}
+
+.reminder-section {
+    margin-top: 2rem;
+}
+
+.reminder-controls {
+    color: white;
+}
+
+.reminder-controls label {
+    color: white;
+}
+
+.reminder-controls select {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    padding: 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .progress-section {
+        grid-template-columns: 1fr;
+    }
+
+    .water-buttons {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

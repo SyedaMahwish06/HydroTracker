@@ -1,0 +1,534 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - HydroTracker{% endblock %}
+
+{% block content %}
+<div class="settings-page glass-card">
+    <h2>Settings</h2>
+
+    <!-- Email Notifications Section -->
+    <div class="settings-section">
+        <h3>📧 Email Notifications</h3>
+
+        <div class="setting-item">
+            <label class="switch">
+                <input type="checkbox" id="email-notifications" {% if user.email_notifications %}checked{% endif %}>
+                <span class="slider"></span>
+            </label>
+            <span class="setting-label">Enable email notifications</span>
+        </div>
+
+        <div class="setting-item">
+            <label>Reminder Frequency:</label>
+            <select id="reminder-frequency">
+                <option value="daily" {% if user.reminder_frequency == 'daily' %}selected{% endif %}>Daily Reminders</option>
+                <option value="weekly" {% if user.reminder_frequency == 'weekly' %}selected{% endif %}>Weekly Summary</option>
+                <option value="achievements" {% if user.reminder_frequency == 'achievements' %}selected{% endif %}>Achievements Only</option>
+                <option value="none" {% if user.reminder_frequency == 'none' %}selected{% endif %}>No Reminders</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Water Goal Settings -->
+    <div class="settings-section">
+        <h3>🎯 Water Intake Goal</h3>
+        <div class="setting-item">
+            <label for="daily-goal">Daily Goal (ml):</label>
+            <input type="number" id="daily-goal" value="{{ user.daily_goal or 2000 }}" min="500" max="5000" step="100">
+        </div>
+        <p class="setting-description">Recommended: 2000ml (8 glasses) per day</p>
+    </div>
+
+    <!-- Theme Settings -->
+    <div class="settings-section">
+        <h3>🎨 Theme Preferences</h3>
+        <div class="theme-selector">
+            <div class="theme-option">
+                <input type="radio" id="theme-light" name="theme" value="light" {% if user.theme == 'light' %}checked{% endif %}>
+                <label for="theme-light" class="theme-label">
+                    <span class="theme-preview light-theme"></span>
+                    Light Mode
+                </label>
+            </div>
+            <div class="theme-option">
+                <input type="radio" id="theme-dark" name="theme" value="dark" {% if not user.theme or user.theme == 'dark' %}checked{% endif %}>
+                <label for="theme-dark" class="theme-label">
+                    <span class="theme-preview dark-theme"></span>
+                    Dark Mode
+                </label>
+            </div>
+            <div class="theme-option">
+                <input type="radio" id="theme-auto" name="theme" value="auto" {% if user.theme == 'auto' %}checked{% endif %}>
+                <label for="theme-auto" class="theme-label">
+                    <span class="theme-preview auto-theme"></span>
+                    System Default
+                </label>
+            </div>
+        </div>
+    </div>
+
+<!--    &lt;!&ndash; Email Preview Section &ndash;&gt;-->
+<!--    <div class="settings-section">-->
+<!--        <h3>✉️ Email Preview</h3>-->
+<!--        <div class="setting-item">-->
+<!--            <p>Test your email settings:</p>-->
+<!--            <button onclick="testEmail()" class="btn btn-secondary">Send Test Email</button>-->
+<!--        </div>-->
+<!--        <div id="test-result" class="test-result"></div>-->
+<!--    </div>-->
+
+    <!-- Email Types Info -->
+    <div class="settings-info">
+        <h4>📬 What emails will you receive?</h4>
+        <div class="email-types">
+            <div class="email-type">
+                <span class="email-icon">💧</span>
+                <div>
+                    <strong>Daily Reminders</strong>
+                    <p>Gentle reminders to drink water throughout the day</p>
+                </div>
+            </div>
+            <div class="email-type">
+                <span class="email-icon">📊</span>
+                <div>
+                    <strong>Goal Progress</strong>
+                    <p>Updates on your daily and weekly hydration progress</p>
+                </div>
+            </div>
+            <div class="email-type">
+                <span class="email-icon">🏆</span>
+                <div>
+                    <strong>Achievements</strong>
+                    <p>Celebrate when you unlock new hydration milestones</p>
+                </div>
+            </div>
+            <div class="email-type">
+                <span class="email-icon">👋</span>
+                <div>
+                    <strong>Welcome & Tips</strong>
+                    <p>Helpful tips and welcome messages</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="settings-actions">
+        <button onclick="saveAllSettings()" class="btn btn-primary">Save All Settings</button>
+        <button onclick="resetToDefaults()" class="btn btn-outline">Reset to Defaults</button>
+    </div>
+</div>
+
+<style>
+.settings-page {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.settings-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.settings-section h3 {
+    color: white;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.setting-label {
+    color: white;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.setting-description {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* Switch styles */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Input and Select styles */
+input[type="number"], select {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: white;
+    font-size: 1rem;
+    min-width: 150px;
+}
+
+input[type="number"]:focus, select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+/* Theme Selector */
+.theme-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.theme-option {
+    position: relative;
+}
+
+.theme-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+.theme-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.theme-option input[type="radio"]:checked + .theme-label {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.theme-preview {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.light-theme {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+}
+
+.dark-theme {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+.auto-theme {
+    background: linear-gradient(135deg, #1a1a1a 50%, #ffffff 50%);
+}
+
+/* Email Types */
+.email-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.email-type {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.email-icon {
+    font-size: 1.5rem;
+}
+
+.email-type strong {
+    color: white;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.email-type p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Test Result */
+.test-result {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    display: none;
+}
+
+.test-result.success {
+    background: rgba(40, 167, 69, 0.2);
+    border: 1px solid #28a745;
+    color: #28a745;
+    display: block;
+}
+
+.test-result.error {
+    background: rgba(220, 53, 69, 0.2);
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    display: block;
+}
+
+/* Action Buttons */
+.settings-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 150px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-outline {
+    background: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .settings-actions {
+        flex-direction: column;
+    }
+
+    .theme-selector {
+        grid-template-columns: 1fr;
+    }
+
+    .email-types {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function saveAllSettings() {
+    const emailNotifications = document.getElementById('email-notifications').checked;
+    const reminderFrequency = document.getElementById('reminder-frequency').value;
+    const dailyGoal = document.getElementById('daily-goal').value;
+    const theme = document.querySelector('input[name="theme"]:checked').value;
+
+    // Save email settings
+    fetch('/update_email_settings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email_notifications: emailNotifications,
+            reminder_frequency: reminderFrequency
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            console.error('Failed to save email settings:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving email settings:', error);
+    });
+
+    // Save daily goal
+    fetch('/update_goal', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            goal: dailyGoal
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            console.error('Failed to save daily goal:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving daily goal:', error);
+    });
+
+    // Save theme
+    fetch('/update_theme', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            theme: theme
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            console.error('Failed to save theme:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving theme:', error);
+    });
+
+    showNotification('All settings saved successfully! ✅');
+}
+
+function testEmail() {
+    const testResult = document.getElementById('test-result');
+    testResult.className = 'test-result';
+    testResult.textContent = 'Sending test email...';
+    testResult.style.display = 'block';
+
+    fetch('/test-email')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                testResult.className = 'test-result success';
+                testResult.textContent = data.message || 'Test email sent successfully!';
+            } else {
+                testResult.className = 'test-result error';
+                testResult.textContent = data.error || 'Failed to send test email';
+            }
+        })
+        .catch(error => {
+            testResult.className = 'test-result error';
+            testResult.textContent = 'Error: ' + error.message;
+        });
+}
+
+function resetToDefaults() {
+    if (confirm('Are you sure you want to reset all settings to defaults?')) {
+        document.getElementById('email-notifications').checked = true;
+        document.getElementById('reminder-frequency').value = 'daily';
+        document.getElementById('daily-goal').value = 2000;
+        document.getElementById('theme-dark').checked = true;
+        showNotification('Settings reset to defaults', 'info');
+    }
+}
+
+function showNotification(message, type = 'success') {
+    // Use your existing notification system or fallback to alert
+    if (window.showNotification && typeof window.showNotification === 'function') {
+        window.showNotification(message, type);
+    } else {
+        alert(message);
+    }
+}
+
+// Initialize theme previews
+document.addEventListener('DOMContentLoaded', function() {
+    const themeOptions = document.querySelectorAll('.theme-option input[type="radio"]');
+    themeOptions.forEach(option => {
+        option.addEventListener('change', function() {
+            // Update visual selection
+            document.querySelectorAll('.theme-label').forEach(label => {
+                label.style.borderColor = 'transparent';
+                label.style.background = 'rgba(255, 255, 255, 0.05)';
+            });
+
+            if (this.checked) {
+                const label = this.closest('.theme-option').querySelector('.theme-label');
+                label.style.borderColor = '#667eea';
+                label.style.background = 'rgba(102, 126, 234, 0.1)';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

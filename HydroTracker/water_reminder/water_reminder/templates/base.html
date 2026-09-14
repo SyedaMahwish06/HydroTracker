@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ session.get('theme', 'light') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Favicon using emoji -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💧</text></svg>">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#667eea">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-logo">💧 HydroTracker</h1>
+            <div class="nav-links">
+                {% if session.user_id %}
+                    <a href="{{ url_for('dashboard') }}"> Dashboard</a>
+                    <a href="{{ url_for('history') }}"> History</a>
+                    <a href="{{ url_for('analytics') }}"> Analytics</a>
+                    <a href="{{ url_for('achievements') }}"> Achievements</a>
+                    <a href="{{ url_for('settings') }}"> Settings</a>
+                    <a href="{{ url_for('watch_setup') }}">Watch</a>  <!-- ADD THIS LINE -->
+
+                    <div class="theme-toggle">
+                        <button onclick="toggleTheme()" class="theme-btn">
+                            <span class="theme-icon">🌙</span>
+                        </button>
+                    </div>
+                    <span class="user-welcome">Welcome, {{ session.username }}</span>
+                    <a href="{{ url_for('logout') }}"> Logout</a>
+                {% else %}
+                    <a href="{{ url_for('index') }}">Home</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

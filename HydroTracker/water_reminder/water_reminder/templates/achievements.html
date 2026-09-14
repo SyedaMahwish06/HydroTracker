@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Achievements - HydroTracker{% endblock %}
+
+{% block content %}
+<div class="achievements-page glass-card">
+    <h2>Your Achievements</h2>
+    <p class="page-subtitle">Unlock achievements by staying hydrated and building healthy habits!</p>
+
+    <div class="achievements-list">
+        {% for achievement in achievements %}
+        <div class="achievement-card {% if achievement.unlocked %}unlocked{% else %}locked{% endif %}">
+            <div class="achievement-card-icon">
+                {% if achievement.unlocked %}
+                    {{ achievement.icon or '🏆' }}
+                {% else %}
+                    🔒
+                {% endif %}
+            </div>
+            <div class="achievement-card-content">
+                <div class="achievement-card-name">{{ achievement.name }}</div>
+                <div class="achievement-card-desc">{{ achievement.description }}</div>
+                {% if achievement.unlocked %}
+                <div class="achievement-card-date">
+                    {% if achievement.unlocked_at %}
+                        Unlocked on {{ achievement.unlocked_at.strftime('%Y-%m-%d') }}
+                    {% else %}
+                        Unlocked
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="achievement-card-date">Locked - Keep going!</div>
+                {% endif %}
+            </div>
+            <div class="achievement-status">
+                {% if achievement.unlocked %}
+                <span class="status-unlocked">✓ Unlocked</span>
+                {% else %}
+                <span class="status-locked">🔒 Locked</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="motivation-section glass-card">
+        <h3>Keep Going! 💪</h3>
+        <p>Every glass of water brings you closer to your next achievement. Stay hydrated and unlock them all!</p>
+    </div>
+</div>
+
+<style>
+.achievements-page {
+    padding: 2rem;
+    margin: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.achievements-page h2 {
+    color: white;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    font-size: 2rem;
+}
+
+.page-subtitle {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.achievements-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.achievement-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.achievement-card.unlocked {
+    background: rgba(102, 126, 234, 0.15);
+    border-color: rgba(102, 126, 234, 0.5);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+.achievement-card.locked {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    opacity: 0.8;
+}
+
+.achievement-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.achievement-card-icon {
+    font-size: 2.8rem;
+    min-width: 60px;
+    text-align: center;
+}
+
+.achievement-card-content {
+    flex: 1;
+}
+
+.achievement-card-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.achievement-card-desc {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+}
+
+.achievement-card-date {
+    color: #4CAF50;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.achievement-status {
+    font-weight: bold;
+    min-width: 80px;
+    text-align: center;
+}
+
+.status-unlocked {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.status-locked {
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: bold;
+}
+
+.motivation-section {
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.motivation-section h3 {
+    color: white;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.motivation-section p {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .achievements-page {
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+
+    .achievements-list {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .achievement-card {
+        padding: 1.2rem;
+        gap: 1rem;
+    }
+
+    .achievement-card-icon {
+        font-size: 2.2rem;
+        min-width: 50px;
+    }
+
+    .motivation-section {
+        padding: 1.5rem;
+    }
+
+    .achievements-page h2 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .achievement-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.8rem;
+    }
+
+    .achievement-status {
+        margin-top: 0.5rem;
+    }
+}
+</style>
+{% endblock %}

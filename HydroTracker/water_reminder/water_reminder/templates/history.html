@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}History - HydroTracker{% endblock %}
+
+{% block content %}
+<div class="history-page glass-card">
+    <h2>Your Drinking History</h2>
+
+    {% if history %}
+    <div class="history-chart">
+        <div class="chart-container">
+            {% for day in history %}
+            <div class="chart-bar">
+                <div class="bar-label">{{ day.date }}</div>
+                <div class="bar-container">
+                    <div class="bar-fill" style="height: {{ (day.total / 2000) * 100 }}%"></div>
+                </div>
+                <div class="bar-amount">{{ day.total }}ml</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="history-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Total Intake</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in history %}
+                <tr>
+                    <td>{{ day.date }}</td>
+                    <td>{{ day.total }} ml</td>
+                    <td>
+                        {% if day.total >= 2000 %}
+                        <span class="status-completed">Goal Met</span>
+                        {% else %}
+                        <span class="status-pending">Incomplete</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-history">
+        <p>No drinking history available.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.history-page {
+    padding: 2rem;
+    margin: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.history-page h2 {
+    color: white;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.history-chart {
+    margin: 2rem 0;
+}
+
+.chart-container {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+    justify-content: center;
+    height: 300px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow-x: auto;
+}
+
+.chart-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+}
+
+.bar-container {
+    flex: 1;
+    width: 30px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 5px 5px 0 0;
+    display: flex;
+    align-items: end;
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+.bar-fill {
+    width: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 5px 5px 0 0;
+    transition: height 0.3s ease;
+    min-height: 5px;
+}
+
+.bar-label, .bar-amount {
+    font-size: 0.8rem;
+    text-align: center;
+    color: white;
+    margin: 0.2rem 0;
+}
+
+.bar-label {
+    font-weight: bold;
+}
+
+.history-table {
+    margin-top: 2rem;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+th {
+    background: rgba(255, 255, 255, 0.2);
+    font-weight: bold;
+}
+
+.status-completed {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.status-pending {
+    color: #f44336;
+    font-weight: bold;
+}
+
+.no-history {
+    text-align: center;
+    padding: 2rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .history-page {
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+
+    .chart-container {
+        height: 250px;
+        gap: 0.5rem;
+    }
+
+    .chart-bar {
+        min-width: 50px;
+    }
+
+    th, td {
+        padding: 0.5rem;
+    }
+}
+</style>
+{% endblock %}

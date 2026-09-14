@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}HydroTracker - Stay Hydrated{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    {% if login %}
+    <div class="auth-form">
+        <h2>Login to Your Account</h2>
+        <form method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+    </div>
+    {% elif register %}
+    <div class="auth-form">
+        <h2>Create Account</h2>
+        <form method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="number" name="daily_goal" placeholder="Daily Goal (ml)" value="2000" min="500" max="5000">
+            <input type="number" name="weight_kg" placeholder="Weight (kg)" step="0.1" min="30" max="200">
+            <select name="activity_level">
+                <option value="sedentary">Sedentary</option>
+                <option value="light" selected>Light Activity</option>
+                <option value="moderate">Moderate Activity</option>
+                <option value="active">Active</option>
+                <option value="athlete">Athlete</option>
+            </select>
+            <button type="submit">Register</button>
+        </form>
+        <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+    </div>
+    {% else %}
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1>Stay Hydrated, Stay Healthy</h1>
+            <p>Track your daily water intake and receive reminders to drink water regularly. Achieve your hydration goals with smart analytics and achievements.</p>
+            <div class="hero-buttons">
+                <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+                <a href="{{ url_for('register') }}" class="btn btn-secondary">Register</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="water-glass">💧</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
